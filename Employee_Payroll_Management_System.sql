@@ -91,7 +91,7 @@ select 	employee_id, name, department, salary, bonus, tax_percentage,
 		round((salary * (tax_percentage / 100)),2) as Tax_deductions,
 		round((salary + bonus) * (1 - tax_percentage / 100) , 2) as Net_Salary
 from employees
-order by Net_Salary desc;
+order by Net_Salary desc, name;
 	
 -- e) Retrieve the average, minimum, and maximum salary per department.
 
@@ -109,7 +109,6 @@ order by Average_Salary desc, department;
 --###################################################################################
 
 -- a) Retrieve employees who joined in the last 6 months.
-
 
 select employee_id, name, department, joining_date
 from employees
@@ -140,34 +139,33 @@ limit 1;
 select department, employee_count, Average_Salary
 from (
 	select department, count(*) as employee_count, round(avg(salary), 2) as Average_Salary,
-	rank() over (order by avg(salary) desc) as rank
+	rank() over (order by avg(salary) desc) as rnk
 	from employees
 	group by department
 )ranked
-where rank = 1;
+where rnk = 1;
 
 
 -- d) Identify employees who have the same salary as at least one other employee.
 
---v1
+--v1 using sub query
 select employee_id, name, department, salary
 from employees
 where salary in (
-		select salary
-		from employees
+		select salary from employees
 		group by salary
 		having count(*) > 1
 )
 order by salary desc, name;
 
 
---v2
+--v2 using window function
 select employee_id, name, department, salary
 from (
 		select employee_id, name, department, salary,
 				count(*) over (partition by salary) as sal_match
 		from employees
-) t
+) sal
 where sal_match > 1
 order by salary desc, name;
 
