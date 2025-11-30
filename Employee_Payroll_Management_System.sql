@@ -40,9 +40,12 @@ insert into employees (Name, Department, Email, Phone_no, Joining_date, Salary, 
 				('Daniel Brown', 'Finance', 'daniel.brown@example.com', 9678901234, '2024-10-30', 115000.00, 18000.00, 18.0),
 				('Olivia Taylor', 'HR', 'olivia.taylor@example.com', 9789012345, '2025-03-05', 68000.00, 3000.00, 10.0),
 				('James Anderson', 'Sales', 'james.anderson@example.com', 9567890123, '2024-07-14', 90000.00, 10000.00, 12.5),
-				('Ava Thomas', 'IT', 'ava.thomas@example.com', 9890123456, '2024-06-20', 95000.00, 9000.00, 15.0);
-				('Amit Sharma','IT','amit.sharma@company.com', 9876543210, '2022-03-15', 95000.00, 15000.00, 12.5);
-
+				('Ava Thomas', 'IT', 'ava.thomas@example.com', 9890123456, '2024-06-20', 95000.00, 9000.00, 15.0),
+				('Amit Sharma','IT','amit.sharma@company.com', 9876543210, '2022-03-15', 95000.00, 15000.00, 12.5),
+				('Pooja Nair', 'Finance', 'pooja.nair@example.com', 9678941234, '2025-10-30', 115000.00, 18000.00, 18.0),
+				('Priya Singh', 'HR', 'priya.singh@example.com', 9223454789, '2025-09-12', 70000.00, 5000.00, 10.0),
+				('Rohan Gupta', 'Sales', 'rohan.gupta@example.com', 9445678991, '2025-06-18', 88000.00, 12000.00, 12.5);
+				
 
 
 
@@ -104,7 +107,56 @@ order by Average_Salary desc;
 --Advanced Queries:
 --###################################################################################
 
+-- a) Retrieve employees who joined in the last 6 months.
 
+
+select employee_id, name, department, joining_date
+from employees
+where joining_date >= (current_date - interval '6 months')
+order by joining_date desc;
+
+
+-- b) Group employees by department and count how many employees each has.
+
+select department, count(*) as employee_count
+from employees
+group by department
+order by employee_count desc;
+
+
+-- c) Find the department with the highest average salary.
+
+--v1 using limit
+
+select department, count(*) as employee_count,  round(avg(salary), 2) as Average_Salary
+from employees
+group by department
+order by Average_Salary desc
+limit 1;
+
+
+--v2 using window function
+select department, employee_count, Average_Salary
+from (
+	select department, count(*) as employee_count, round(avg(salary), 2) as Average_Salary,
+	rank() over (order by avg(salary) desc) as rank
+	from employees
+	group by department
+)ranked
+where rank = 1;
+
+
+-- d) Identify employees who have the same salary as at least one other employee.
+
+select employee_id, name, department, salary
+from employees
+where salary in (
+		select salary
+		from employees
+		group by salary
+		having count(*) > 1
+)
+order by salary desc, name;
 
 
 
