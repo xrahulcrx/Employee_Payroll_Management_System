@@ -17,13 +17,13 @@ select current_database();
 create table employees (
 						Employee_ID int generated always as identity primary key,
 						Name varchar(50) not null,
-						Department varchar(50),
+						Department varchar(50) not null,
 						Email varchar(50) unique not null,
 						Phone_No bigint,
-						Joining_date date,
-						Salary decimal(10,2),
-						Bonus decimal(10,2),
-						Tax_Percentage decimal(5,2)
+						Joining_date date not null,
+						Salary decimal(10,2) not null check (Salary >= 0),
+						Bonus decimal(10,2) not null check (Salary >= 0),
+						Tax_Percentage decimal(5,2) DEFAULT 0 CHECK (tax_percentage BETWEEN 0 AND 100)
 );
 
 
@@ -41,11 +41,75 @@ insert into employees (Name, Department, Email, Phone_no, Joining_date, Salary, 
 				('Olivia Taylor', 'HR', 'olivia.taylor@example.com', 9789012345, '2025-03-05', 68000.00, 3000.00, 10.0),
 				('James Anderson', 'Sales', 'james.anderson@example.com', 9567890123, '2024-07-14', 90000.00, 10000.00, 12.5),
 				('Ava Thomas', 'IT', 'ava.thomas@example.com', 9890123456, '2024-06-20', 95000.00, 9000.00, 15.0);
+				('Amit Sharma','IT','amit.sharma@company.com', 9876543210, '2022-03-15', 95000.00, 15000.00, 12.5);
 
 
+
+
+select * from employees;
 
 --------------------------------------------------------------------------------------------------------------------
 --------------------------------------------------------------------------------------------------------------------
+
+
+--#######################################################################
+--Payroll Queries:
+--#######################################################################
+
+-- a) Retrieve the list of employees sorted by salary in descending order.
+
+select employee_id, name, department, salary
+from employees
+order by salary desc;
+
+
+-- b) Find employees with a total compensation (SALARY + BONUS) greater than $100,000.
+
+select employee_id, name, department, (salary + bonus) as Total_Salary 
+from employees
+where (salary + bonus) > 100000
+order by Total_Salary desc;
+
+
+-- c) Update the bonus for employees in the ‘Sales’ department by 10%.
+
+update employees set bonus = bonus * 1.10
+where department = 'Sales';
+
+select employee_id, name, department, bonus as New_bonus
+from employees where department = 'Sales';
+
+
+-- d) Calculate the net salary after deducting tax for all employees.
+
+select 	employee_id, name, department, salary, bonus, tax_percentage,
+		(salary + bonus) as Gross_Salary,
+		round((salary * (tax_percentage / 100)),2) as Tax_deductions,
+		round((salary + bonus) * (1 - tax_percentage / 100) , 2) as Net_Salary
+from employees
+order by Net_Salary desc;
+	
+-- e) Retrieve the average, minimum, and maximum salary per department.
+
+select department, count(*) as Employee_Count, round(avg(salary), 2) as Average_Salary,
+		min(salary) as Minimum_Salary, max(salary) as Maximum_Salary
+from employees
+group by department
+order by Average_Salary desc;
+
+-------------------------------------------------------------------------------------------------------------------------
+-------------------------------------------------------------------------------------------------------------------------
+
+--###################################################################################
+--Advanced Queries:
+--###################################################################################
+
+
+
+
+
+
+
 
 
 
